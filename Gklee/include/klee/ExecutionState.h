@@ -187,6 +187,8 @@ public:
 
   ExecutionState(const ExecutionState& state);
 
+  ExecutionState copy(const ExecutionState& state) const;
+
   ~ExecutionState();
 
   ExecutionState *branch();
