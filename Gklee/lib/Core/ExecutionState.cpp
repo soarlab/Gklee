@@ -180,10 +180,10 @@ ExecutionState ExecutionState::copy(const ExecutionState& state) const
   result.fakeState = state.fakeState; // Safe
   result.underConstrained = state.underConstrained; // Safe
   result.depth = state.depth; // Safe
-  result.brMeta = state.brMeta; // Safe? BranchInstMeta - Possibly
+  result.brMeta = state.brMeta; // Safe? BranchInstMeta - conatins *inst (is not used for this?)
   result.cTidSets = state.cTidSets; // Safe? CorrespondTid(ParametricTree.h)
                                     // - Possibly: depends on Expr
-  result.tinfo = state.tinfo; // Safe? ThreadInfo
+  result.tinfo = state.tinfo; // Safe? from CUDA.h line ~156 
   result.stacks = state.stacks; // Safe? vector<vector<StackFrame>> - Possibly
   result.constraints = state.constraints; // Safe? ConstraintManager - Probably not
   result.paraConstraints = state.paraConstraints; // Safe ConstraintManager
@@ -206,11 +206,11 @@ ExecutionState ExecutionState::copy(const ExecutionState& state) const
   result.coveredNew = state.coveredNew; // Safe
   result.forkDisabled = state.forkDisabled; // Safe
   result.coveredLines = state.coveredLines; // Unsafe? map<string*,set<unsigned>>
-  result.ptreeNode = state.ptreeNode; // Unsafe PtreeNode*
+  result.ptreeNode = state.ptreeNode; // safe PtreeNode* - probably
   result.maxKernelSharedSize = state.maxKernelSharedSize; // Safe
-  result.symbolics = state.symbolics; // Unsafe? vector<pair<MemoryObject*,Array*>>
+  result.symbolics = state.symbolics; // safe? vector<pair<const MemoryObject*, const Array*>> - probably
   result.arrayNames = state.arrayNames; // Safe
-  result.shadowObjects = state.shadowObjects; // Safe? MemoryMap
+  result.shadowObjects = state.shadowObjects; // Safe? MemoryMap - probably
   result.incomingBBIndex = state.incomingBBIndex; // Safe
   return result;
 }
