@@ -193,19 +193,17 @@ ExecutionState ExecutionState::copy(const ExecutionState& state) const
   result.symTimeVec = state.symTimeVec; // Safe
   result.queryCost = state.queryCost; // Safe
   result.weight = state.weight; // Safe
-  result.addressSpace = state.addressSpace; // Safe? HierAddressSpace (AddressSpace.h:~500)
-                                            // Depends on: AddressSpace, InstAccessSet, BBAccessSet,
-                                            // RefDivRegionSetVec, SameInstVec, BranchDivRegionSet, Expr
-                                            // WarpDefVec
+  result.addressSpace = state.addressSpace; // Safe HierAddressSpace (AddressSpace.h:~500)
+                                            // has copy constructor
   result.forkStateBINum = state.forkStateBINum; // Safe
   result.kernelNum = state.kernelNum; // Safe
   result.BINum = state.BINum; // Safe
-  result.pathOS = state.pathOS; // Safe? TreeOStream
-  result.symPathOS = state.symPathOS; // Safe? TreeOStream
+  result.pathOS = state.pathOS; // Safe? TreeOStream - unknown
+  result.symPathOS = state.symPathOS; // Safe? TreeOStream - unknown
   result.instsSinceCovNew = state.instsSinceCovNew; // Safe
   result.coveredNew = state.coveredNew; // Safe
   result.forkDisabled = state.forkDisabled; // Safe
-  result.coveredLines = state.coveredLines; // Unsafe? map<string*,set<unsigned>>
+  result.coveredLines = state.coveredLines; // safe map<string*,set<unsigned>> - probably
   result.ptreeNode = state.ptreeNode; // safe PtreeNode* - probably
   result.maxKernelSharedSize = state.maxKernelSharedSize; // Safe
   result.symbolics = state.symbolics; // safe? vector<pair<const MemoryObject*, const Array*>> - probably
