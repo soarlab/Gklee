@@ -133,11 +133,49 @@ ExecutionState::~ExecutionState() {
   popAllFrames();
 }
 
+ExecutionState::ExecutionState(const ExecutionState& state)
+  : fnAliases(state.fnAliases),
+    deviceSet(state.deviceSet),
+    fakeState(state.fakeState),
+    underConstrained(state.underConstrained),
+    depth(state.depth),
+    brMeta(state.brMeta),
+    cTidSets(state.cTidSets),
+    tinfo(state.tinfo),
+    stacks(state.stacks),
+    constraints(state.constraints),
+    paraConstraints(state.paraConstraints),
+    paraTreeSets(state.paraTreeSets),
+    symInputVec(state.symInputVec),
+    concreteTimeVec(state.concreteTimeVec),
+    symTimeVec(state.symTimeVec),
+    queryCost(state.queryCost),
+    weight(state.weight),
+    addressSpace(state.addressSpace),
+    forkStateBINum(state.forkStateBINum),
+    kernelNum(state.kernelNum),
+    BINum(state.BINum),
+    pathOS(state.pathOS),
+    symPathOS(state.symPathOS),
+    instsSinceCovNew(state.instsSinceCovNew),
+    coveredNew(state.coveredNew),
+    forkDisabled(state.forkDisabled),
+    coveredLines(state.coveredLines),
+    ptreeNode(state.ptreeNode),
+    maxKernelSharedSize(state.maxKernelSharedSize),
+    symbolics(state.symbolics),
+    arrayNames(state.arrayNames),
+    shadowObjects(state.shadowObjects),
+    incomingBBIndex(state.incomingBBIndex)
+{
+  for (unsigned int i=0; i<symbolics.size(); i++)
+    symbolics[i].first->refCount++;
+}
 
 ExecutionState ExecutionState::copy(const ExecutionState& state) const
 {
   ExecutionState result;
-  result.fnAliases = state.fnAliases; // Safe
+  result.fnAliases(state.fnAliases); // Safe
   result.deviceSet = state.deviceSet; // Safe
   result.fakeState = state.fakeState; // Safe
   result.underConstrained = state.underConstrained; // Safe
@@ -145,8 +183,7 @@ ExecutionState ExecutionState::copy(const ExecutionState& state) const
   result.brMeta(state.brMeta); // Safe? BranchInstMeta - Possibly
   result.cTidSets(state.cTidSets); // Safe? CorrespondTid(ParametricTree.h)
                                     // - Possibly: depends on Expr
-                                    // - Possibly: depends on Expr
-  result.tinfo = state.tinfo; // Safe? from CUDA.h line ~156 
+  result.tinfo = state.tinfo; // Safe? ThreadInfo
   result.stacks = state.stacks; // Safe? vector<vector<StackFrame>> - Possibly
   result.constraints = state.constraints.copy(); // Safe? ConstraintManager - Hopefully
                                                  // deep copy
@@ -157,35 +194,26 @@ ExecutionState ExecutionState::copy(const ExecutionState& state) const
   result.symTimeVec = state.symTimeVec; // Safe
   result.queryCost = state.queryCost; // Safe
   result.weight = state.weight; // Safe
-  result.addressSpace = state.addressSpace; // Safe HierAddressSpace (AddressSpace.h:~500)
-                                            // has copy constructor
+  result.addressSpace = state.addressSpace; // Unsafe HierAddressSpace (AddressSpace.h:~500)
+                                            // Depends on: AddressSpace, InstAccessSet (Safe), BBAccessSet(Safe),
+                                            // RefDivRegionSetVec (Safe), SameInstVec (Safe), 
+                                            // BranchDivRegionSet(Safe), Expr
+                                            // WarpDefVec (Safe)
   result.forkStateBINum = state.forkStateBINum; // Safe
   result.kernelNum = state.kernelNum; // Safe
   result.BINum = state.BINum; // Safe
-  result.pathOS = state.pathOS; // Safe? TreeOStream - unknown
-  result.symPathOS = state.symPathOS; // Safe? TreeOStream - unknown
-  result.instsSinceCovNew = state.instsSinceCovNew; // Safe
+  result.pathOS(state.pathOS); // Safe? TreeOStream
+  result.symPathOS(state.symPathOS); // Safe? TreeOStream
+  result.instsSinceCovNew = state.instsSincecovnew; // safe
   result.coveredNew = state.coveredNew; // Safe
-  result.forkDisabled = state.forkDisabled; // Safe
-  result.coveredLines = state.coveredLines; // safe map<string*,set<unsigned>> - probably
-  result.ptreeNode = state.ptreeNode; // safe PtreeNode* - probably
-  result.maxKernelSharedSize = state.maxKernelSharedSize; // Safe
-  result.symbolics = state.symbolics; // safe? vector<pair<const MemoryObject*, const Array*>> - probably
-  result.arrayNames = state.arrayNames; // Safe
-  result.shadowObjects = state.shadowObjects; // Safe? MemoryMap - probably
-  result.incomingBBIndex = state.incomingBBIndex; // Safe
-  return result;
-  result.instsSinceCovNew = state.instsSinceCovNew; // Safe
-  result.coveredNew = state.coveredNew; // Safe
-  result.forkDisabled = state.forkDisabled; // Safe
   result.forkDisabled = state.forkDisabled; // Safe
   result.coveredLines(state.coveredLines); // Safe map<string*,set<unsigned>>
+  result.ptreeNode = state.ptreeNode; // PtreeNode* (Probably Safe)
   result.maxKernelSharedSize = state.maxKernelSharedSize; // Safe
-  result.symbolics = state.symbolics; // safe? vector<pair<const MemoryObject*, const Array*>> - probably
-  result.arrayNames = state.arrayNames; // Safe
-  result.shadowObjects = state.shadowObjects; // Safe? MemoryMap - probably
-  result.incomingBBIndex = state.incomingBBIndex; // Safe
->>>>>>> feddbf50b5d5d908d21d08b02b55c637f61285d3
+  result.symbolics = state.symbolics; // Unsafe? vector<pair<MemoryObject*,Array*>>
+  result.arrayNames(state.arrayNames); // Safe
+  result.shadowObjects = state.shadowObjects; // Safe? MemoryMap
+  result.incomingBBIndex(state.incomingBBIndex); // Safe
   return result;
 }
 
