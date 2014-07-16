@@ -61,6 +61,18 @@ public:
   }
 };
 
+ConstraintManager ConstraintManager::copy() const
+{
+  ConstraintManager result;
+  // Creates a deep copy of the ConstraintManager's expression list
+  for(int i = 0; i < constraints.size(); i++)
+  {
+    Expr * copyExpr = new Expr(*constraints[i].get);
+    result.constraints.push_back(ref<Expr>(copyExpr);
+  }
+  return result;
+}
+
 bool ConstraintManager::rewriteConstraints(ExprVisitor &visitor) {
   ConstraintManager::constraints_ty old;
   bool changed = false;

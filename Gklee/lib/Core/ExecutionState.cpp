@@ -175,43 +175,45 @@ ExecutionState::ExecutionState(const ExecutionState& state)
 ExecutionState ExecutionState::copy(const ExecutionState& state) const
 {
   ExecutionState result;
-  result.fnAliases = state.fnAliases; // Safe
+  result.fnAliases(state.fnAliases); // Safe
   result.deviceSet = state.deviceSet; // Safe
   result.fakeState = state.fakeState; // Safe
   result.underConstrained = state.underConstrained; // Safe
   result.depth = state.depth; // Safe
-  result.brMeta = state.brMeta; // Safe? BranchInstMeta - Possibly
-  result.cTidSets = state.cTidSets; // Safe? CorrespondTid(ParametricTree.h)
+  result.brMeta(state.brMeta); // Safe? BranchInstMeta - Possibly
+  result.cTidSets(state.cTidSets); // Safe? CorrespondTid(ParametricTree.h)
                                     // - Possibly: depends on Expr
   result.tinfo = state.tinfo; // Safe? ThreadInfo
   result.stacks = state.stacks; // Safe? vector<vector<StackFrame>> - Possibly
-  result.constraints = state.constraints; // Safe? ConstraintManager - Probably not
-  result.paraConstraints = state.paraConstraints; // Safe ConstraintManager
+  result.constraints = state.constraints.copy(); // Safe? ConstraintManager - Hopefully
+                                                 // deep copy
+  result.paraConstraints = state.paraConstraints.copy(); // Safe? ConstraintManager
   result.paraTreeSets = state.paraTreeSets; // Safe? ParaTree - Possibly
   result.symInputVec = state.symInputVec; // Safe
   result.concreteTimeVec = state.concreteTimeVec; // Safe
   result.symTimeVec = state.symTimeVec; // Safe
   result.queryCost = state.queryCost; // Safe
   result.weight = state.weight; // Safe
-  result.addressSpace = state.addressSpace; // Safe? HierAddressSpace (AddressSpace.h:~500)
-                                            // Depends on: AddressSpace, InstAccessSet, BBAccessSet,
-                                            // RefDivRegionSetVec, SameInstVec, BranchDivRegionSet, Expr
-                                            // WarpDefVec
+  result.addressSpace = state.addressSpace; // Unsafe HierAddressSpace (AddressSpace.h:~500)
+                                            // Depends on: AddressSpace, InstAccessSet (Safe), BBAccessSet(Safe),
+                                            // RefDivRegionSetVec (Safe), SameInstVec (Safe), 
+                                            // BranchDivRegionSet(Safe), Expr
+                                            // WarpDefVec (Safe)
   result.forkStateBINum = state.forkStateBINum; // Safe
   result.kernelNum = state.kernelNum; // Safe
   result.BINum = state.BINum; // Safe
-  result.pathOS = state.pathOS; // Safe? TreeOStream
-  result.symPathOS = state.symPathOS; // Safe? TreeOStream
-  result.instsSinceCovNew = state.instsSinceCovNew; // Safe
+  result.pathOS(state.pathOS); // Safe? TreeOStream
+  result.symPathOS(state.symPathOS); // Safe? TreeOStream
+  result.instsSinceCovNew = state.instsSincecovnew; // safe
   result.coveredNew = state.coveredNew; // Safe
   result.forkDisabled = state.forkDisabled; // Safe
-  result.coveredLines = state.coveredLines; // Unsafe? map<string*,set<unsigned>>
-  result.ptreeNode = state.ptreeNode; // Unsafe PtreeNode*
+  result.coveredLines(state.coveredLines); // Safe map<string*,set<unsigned>>
+  result.ptreeNode = state.ptreeNode; // PtreeNode* (Probably Safe)
   result.maxKernelSharedSize = state.maxKernelSharedSize; // Safe
   result.symbolics = state.symbolics; // Unsafe? vector<pair<MemoryObject*,Array*>>
-  result.arrayNames = state.arrayNames; // Safe
+  result.arrayNames(state.arrayNames); // Safe
   result.shadowObjects = state.shadowObjects; // Safe? MemoryMap
-  result.incomingBBIndex = state.incomingBBIndex; // Safe
+  result.incomingBBIndex(state.incomingBBIndex); // Safe
   return result;
 }
 
