@@ -1,0 +1,5 @@
+Error: execution halts on encounering a (global) race
+File: /home/ibriggs/fairytale/race_01/race_01.cpp
+Line: 55
+Stack: 
+	#0 00000258 in main (argc=1, argv=48683104) at /home/ibriggs/fairytale/race_01/race_01.cpp:55

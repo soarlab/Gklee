@@ -1,0 +1,34 @@
+****************************************
+The 0 (pointer) argument of function _Z13device_globalPjS_i: 
+array_a
+The 1 (pointer) argument of function _Z13device_globalPjS_i: 
+array_b
+
+Start evaluating 2 (pointer) arguments of function _Z13device_globalPjS_i
+The Br instruction is tainted w.r.t. the argument: array_a
+The Br instruction is tainted w.r.t. the argument: array_b
+The Br instruction is tainted w.r.t. the argument: array_b
+
+
+In the kernel _Z13device_globalPjS_i, have to set 2 arguments over 3 arguments as [Tainted]
+The 0 argument: array_a
+=====================================
+The 1 argument: array_b
+=====================================
+****************************************
+The 0 (pointer) argument of function _Z13device_globalPjS_i: 
+array_a
+The 1 (pointer) argument of function _Z13device_globalPjS_i: 
+array_b
+
+Start evaluating 2 (pointer) arguments of function _Z13device_globalPjS_i
+The Br instruction is tainted w.r.t. the argument: array_a
+The Br instruction is tainted w.r.t. the argument: array_b
+The Br instruction is tainted w.r.t. the argument: array_b
+
+
+In the kernel _Z13device_globalPjS_i, have to set 2 arguments over 3 arguments as [Tainted]
+The 0 argument: array_a
+=====================================
+The 1 argument: array_b
+=====================================

@@ -1,0 +1,18 @@
+klee -symbolic-config race_01
+PID: 24388
+Started: 2014-07-21 16:53:09
+BEGIN searcher description
+DFSSearcher
+END searcher description
+Finished: 2014-07-21 16:53:41
+Elapsed: 00:00:32
+KLEE: done: explored paths = 1
+KLEE: done: avg. constructs per query = 411
+KLEE: done: total queries = 18
+KLEE: done: valid queries = 4
+KLEE: done: invalid queries = 14
+KLEE: done: query cex = 18
+
+KLEE: done: total instructions = 2673
+KLEE: done: completed paths = 1
+KLEE: done: generated tests = 1

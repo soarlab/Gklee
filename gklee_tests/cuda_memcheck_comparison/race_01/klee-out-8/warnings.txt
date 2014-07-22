@@ -1,0 +1,2 @@
+KLEE: ERROR: /home/ibriggs/fairytale/race_01/race_01.cpp:55: execution halts on encounering a (global) race
+KLEE: NOTE: now ignoring this error at this location

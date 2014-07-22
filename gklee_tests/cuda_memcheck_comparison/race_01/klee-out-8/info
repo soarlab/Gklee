@@ -1,0 +1,17 @@
+klee race_01
+PID: 24581
+Started: 2014-07-21 16:55:49
+BEGIN searcher description
+DFSSearcher
+END searcher description
+Finished: 2014-07-21 16:55:51
+Elapsed: 00:00:02
+KLEE: done: explored paths = 1
+KLEE: done: total queries = 0
+KLEE: done: valid queries = 0
+KLEE: done: invalid queries = 0
+KLEE: done: query cex = 0
+
+KLEE: done: total instructions = 114546
+KLEE: done: completed paths = 1
+KLEE: done: generated tests = 1
