@@ -133,8 +133,46 @@ ExecutionState::~ExecutionState() {
   popAllFrames();
 }
 
+ExecutionState::ExecutionState(const ExecutionState& state)
+  : fnAliases(state.fnAliases),
+    deviceSet(state.deviceSet),
+    fakeState(state.fakeState),
+    underConstrained(state.underConstrained),
+    depth(state.depth),
+    brMeta(state.brMeta),
+    cTidSets(state.cTidSets),
+    tinfo(state.tinfo),
+    stacks(state.stacks),
+    constraints(state.constraints),
+    paraConstraints(state.paraConstraints),
+    paraTreeSets(state.paraTreeSets),
+    symInputVec(state.symInputVec),
+    concreteTimeVec(state.concreteTimeVec),
+    symTimeVec(state.symTimeVec),
+    queryCost(state.queryCost),
+    weight(state.weight),
+    addressSpace(state.addressSpace),
+    forkStateBINum(state.forkStateBINum),
+    kernelNum(state.kernelNum),
+    BINum(state.BINum),
+    pathOS(state.pathOS),
+    symPathOS(state.symPathOS),
+    instsSinceCovNew(state.instsSinceCovNew),
+    coveredNew(state.coveredNew),
+    forkDisabled(state.forkDisabled),
+    coveredLines(state.coveredLines),
+    ptreeNode(state.ptreeNode),
+    maxKernelSharedSize(state.maxKernelSharedSize),
+    symbolics(state.symbolics),
+    arrayNames(state.arrayNames),
+    shadowObjects(state.shadowObjects),
+    incomingBBIndex(state.incomingBBIndex)
+{
+  for (unsigned int i=0; i<symbolics.size(); i++)
+    symbolics[i].first->refCount++;
+}
 
-ExecutionState ExecutionState::copy(const ExecutionState& state) const
+/*ExecutionState ExecutionState::copy(const ExecutionState& state) const
 {
   ExecutionState result;
   result.fnAliases = state.fnAliases; // Safe
@@ -187,7 +225,7 @@ ExecutionState ExecutionState::copy(const ExecutionState& state) const
   result.incomingBBIndex = state.incomingBBIndex; // Safe
 >>>>>>> feddbf50b5d5d908d21d08b02b55c637f61285d3
   return result;
-}
+  }*/
 
 
 ExecutionState *ExecutionState::branch() {
