@@ -1,193 +1,154 @@
+;;; -*- lexical-binding: t -*-
 ;; Adapted by Ian Briggs from gklee-mode.el
 ;; ianbriggs@utah.edu
 
+(defgroup gklee-mode nil
+  "Utilizes Gklee to analyse cuda code"
+  :tag "Gklee-Mode"
+  :group 'external)
+
+(defgroup gklee-run-options nil
+  "Gklee command line options"
+  :tag "Gklee run options"
+  :group 'gklee-mode)
+
+(defgroup gklee-compile-options nil
+  "Gklee compiler command line options"
+  :tag "Gklee compile options"
+  :group 'gklee-mode)
+
+(defgroup gklee-program-options nil
+  "Program under test command line options"
+  :tag "Gklee program under test options"
+  :group 'gklee-mode)
 
 ;;****************************************************************************;;
-;;**                            Option alists                               **;;
+;;**                            Option vars                                 **;;
 ;;****************************************************************************;;
-(setq gklee-toggle-options-alist
-      '(("-PR-use-dep" . nil)
-	("-asm-verbose" . nil)
-	("-avoid-oob-check" . nil)
-	("-bc-cov" . nil)
-	("-check-barrier-redundant" . nil)
-	("-check-BC" . t)
-	("-check-MC" . t)
-	("-check-WD" . t)
-	("-check-div-zero" . nil)
-	("-check-volatile" . t)
-	("-emit-all-errors" . nil)
-	("-ignore-concur-bug" . nil)
-	("-race-prune" . nil)
-	("-reduce-tests" . nil)
-	("-simd-schedule" . nil)
-	("-suppress-external-warnings" . nil)
-	("-symbolic-config" . nil)
-	("-trace" . nil)
-	("-verbose" . nil)))
 
-(setq gklee-int-options-alist
-      '(("-check-level=" . 1)
-	("-device-capability=" . 2)
-	("-max-memory=" . 0)
-	("-max-time=" . 0)))
+;; Boolean flags
+(defcustom gklee-verbose nil "Increases verbosity when set"
+  :group 'gklee-run-options :tag "verbose" :type 'boolean)
 
-(setq gklee-string-options-alist
-      '(("-output-dir=" . ".")
-	("-run-in=" . ".")))
+(defcustom gklee-PR-use-dep nil "Uses dependecies for path reduction when set"
+  :group 'gklee-run-options :tag "path reduction using dependencies" :type 'boolean)
 
+(defcustom gklee-asm-verbose nil "Increases verbosity in asembly output when set"
+  :group 'gklee-run-options :tag "asm verbosity" :type 'boolean)
 
-;;****************************************************************************;;
-;;**                           Command line args                            **;;
-;;****************************************************************************;;
+(defcustom gklee-avoid-oob-check nil "Avoids out of bound check when set"
+  :group 'gklee-run-options :tag "avoid oob check" :type 'boolean)
+
+(defcustom gklee-bc-cov nil "Calculates bytecode coverage when set"
+  :group 'gklee-run-options :tag "bytecode coverage" :type 'boolean)
+
+(defcustom gklee-check-barrier-redundant nil "Checks for unneeded barriers when set"
+  :group 'gklee-run-options :tag "check redundant barriers" :type 'boolean)
+
+(defcustom gklee-check-div-zero nil "Checks for division by zero when set"
+  :group 'gklee-run-options :tag "check divide by zero" :type 'boolean)
+
+(defcustom gklee-check-volatile nil "Check for missing volatile declarations when set"
+  :group 'gklee-run-options :tag "check missed volatile declarations" :type 'boolean)
+
+(defcustom gklee-emit-all-errors nil "Generates test cases for all errors when set"
+  :group 'gklee-run-options :tag "Generate all error tests" :type 'boolean)
+
+(defcustom gklee-ignore-concur-bug nil "Continues upon a concurancy bug when set"
+  :group 'gklee-run-options :tag "continue after concurancy bug" :type 'boolean)
+
+(defcustom gklee-race-prune nil "Prunes paths not leading to races when set"
+  :group 'gklee-run-options :tag "prune non-racing paths" :type 'boolean)
+
+(defcustom gklee-simd-schedule nil "Uses SIMD aware scheduling when set"
+  :group 'gklee-run-options :tag "SIMD scheduling" :type 'boolean)
+
+(defcustom gklee-suppress-external-warnings nil "Supresses external warning when set"
+  :group 'gklee-run-options :tag "supress external warnings" :type 'boolean)
+
+(defcustom gklee-symbolic-config nil "Run Gkleep when set"
+  :group 'gklee-run-options :tag "Use Gkleep" :type 'boolean)
+
+;; integer options
+(defcustom gklee-check-level -1 "the level of race checking used by Gklee, -1=unset"
+  :group 'gklee-run-options :tag "check level" 
+  :type '(integer :match (lambda (w val) (>= val -1))))
+
+(defcustom gklee-device-capability -1 "device capability (-1)=Gklee defaiult (0)=1.0 and 1.1 (1)=1.2 and 1.3 (2)=2.x"
+  :group 'gklee-run-options :tag "device capatbility" 
+  :type '(integer :match (lambda (w val) (and (>= val -1) (<= val 2)))))
+
+(defcustom gklee-max-memory -1 "memory limit on Gklee (0=no limit, -1=unset)"
+  :group 'gklee-run-options :tag "memory limit" 
+  :type '(integer :match (lambda (w val) (>= val -1))))
+
+(defcustom gklee-max-time -1 "time limit on Gklee (0=no limit, -1=unset)"
+  :group 'gklee-run-options :tag "time limit" 
+  :type '(integer :match (lambda (w val) (>= val -1))))
+
+;; strings
 (defcustom gklee-gklee-user-args ""
   "Command line arguments to pass to Gklee"
-  :type '(string))
+  :group 'gklee-run-options :tag "user supplied arguments"
+  :type 'string)
 
 (defcustom gklee-compile-user-args ""
   "Command line arguments to pass to llvm"
-  :type '(string))
+  :group 'gklee-compile-options :tag "user supplied arguments"
+  :type 'string)
 
 (defcustom gklee-program-user-args ""
   "Command line arguments to pass to your program"
-  :type '(string))
+  :group 'gklee-program-args :tag "user supplied arguments"
+  :type 'string)
 
 
 ;;****************************************************************************;;
-;;**                   Interactive functions for options                    **;;
+;;**                       Command generatorss                              **;;
 ;;****************************************************************************;;
-(defun gklee-set-command-option (option target_alist new_value)
-  (let ((old_value (assoc option target_alist)))
-    (if (not old_value)
-	(message "option to set does not exist")
-      (setcdr old_value new_value)
-      (message (format "set %s to %s" (car old_value) (cdr old_value))))))
+(defun gklee-get-compile-command-args (file-name)
+  "Returns the command args for compiling the given filewith the current settings"
+  (concat gklee-compile-user-args " " file-name))
 
+(defun gklee-get-gklee-command-args (file-name)
+  "Returns the command agrs for running Gklee on the given file for the current settings"
+  (let ((bool-arguments  '((gklee-verbose . "-verbose")
+			   (gklee-PR-use-dep . "-PF-use-dep")
+			   (gklee-asm-verbose . "-asm-verbose")
+			   (gklee-avoid-oob-check . "-avoid-oob-check")
+			   (gklee-bc-cov . "-bc-cov")
+			   (gklee-check-barrier-redundant . "-check-barrier-redundant")
+			   (gklee-check-div-zero . "-check-div-zero")
+			   (gklee-check-volatile . "-check-volatile")
+			   (gklee-emit-all-errors . "-emit-all-errors")
+			   (gklee-ignore-concur-bug . "-ignore-concur-bug")
+			   (gklee-race-prune . "-race-prune")
+			   (gklee-simd-schedule . "-simd-schedule")
+			   (gklee-suppress-external-warnings . "-suppress-external-warnings")
+			   (gklee-symbolic-config . "-symbolic-config")))
 
-;; Binary options
-(defun gklee-toggle-option (option)
-  (gklee-set-command-option
-   option
-   gklee-toggle-options-alist
-   (not (cdr (assoc option gklee-toggle-options-alist)))))
-
-
-(defun gklee-toggle-dependency-analysis ()
-  (interactive) (gklee-toggle-option "-PR-use-dep"))
-(defun gklee-toggle-asm-verbose ()
-  (interactive) (gklee-toggle-option "-asm-verbose"))
-(defun gklee-toggle-oob-check ()
-  (interactive) (gklee-toggle-option "-avoid-oob-check"))
-(defun gklee-toggle-bytecode-coverage ()
-  (interactive) (gklee-toggle-option "-bc-cov"))
-(defun gklee-toggle-check-barrier-redundant ()
-  (interactive) (gklee-toggle-option "-check-barrier-redundant"))
-(defun gklee-toggle-bank-conflicts ()
-  (interactive) (gklee-toggle-option "-check-BC"))
-(defun gklee-toggle-memory-coalesce ()
-  (interactive) (gklee-toggle-option "-check-MC"))
-(defun gklee-toggle-warp-divergence ()
-  (interactive) (gklee-toggle-option "-check-WD"))
-(defun gklee-toggle-div-zero-check ()
-  (interactive) (gklee-toggle-option "-check-div-zero"))
-(defun gklee-toggle-check-volatile ()
-  (interactive) (gklee-toggle-option "-check-volatile"))
-(defun gklee-toggle-all-errors ()
-  (interactive) (gklee-toggle-option "-emit-all-errors"))
-(defun gklee-toggle-concurrency-bug ()
-  (interactive) (gklee-toggle-option "-ignore-concur-bug"))
-(defun gklee-toggle-race-prune ()
-  (interactive) (gklee-toggle-option "-race-prune"))
-(defun gklee-toggle-reduce-tests ()
-  (interactive) (gklee-toggle-option "-reduce-tests"))
-(defun gklee-toggle-simd-schedule ()
-  (interactive) (gklee-toggle-option "-simd-schedule"))
-(defun gklee-toggle-external-warnings ()
-  (interactive) (gklee-toggle-option "-suppress-external-warnings"))
-(defun gklee-toggle-symbolic-config ()
-  (interactive) (gklee-toggle-option "-symbolic-config"))
-(defun gklee-toggle-trace ()
-  (interactive) (gklee-toggle-option "-trace"))
-(defun gklee-toggle-verbose ()
-  (interactive) (gklee-toggle-option "-verbose"))
-
-
-;; Integer options
-(defun gklee-set-int-option (option value min max)
-  (if (or (> value max) (< value min))
-      (message
-       (format "value given is outside of range %d to %d, no changes made"
-	       min max))
-    (gklee-set-command-option option gklee-int-options-alist value)))
-
-(defun gklee-set-check-level (n)
-  (interactive "nCheck Level (0)=none (1)=shared mem (2)=full : ")
-  (gklee-set-int-option "-check-level=" n 0 2))
-(defun gklee-set-device-capability (n)
-  (interactive "nDevice Capability (0)=1.0 and 1.1 (1)=1.2 and 1.3 (2)=2.x : ")
-  (gklee-set-int-option "-device-capability=" n 0 2))
-(defun gklee-set-max-memory (n)
-  (interactive "nMaximum memory allowed: ")
-  (gklee-set-int-option "-max-memory=" n 0 most-positive-fixnum))
-(defun gklee-set-max-time (n)
-  (interactive "nMaximum time allowed: ")
-  (gklee-set-int-option "-max-time=" n 0 most-positive-fixnum))
-
-
-;; String options
-(defun gklee-set-string-option (option value)
-  (gklee-set-command-option option gklee-string-option-alist value))
-
-(defun gklee-set-output-dir (dir)
-  (interactive "DOutput directory: ")
-  (gklee-set-string-option "-output-dir=" dir))
-(defun gklee-set-run-sir (dir)
-  (interactive "DDirectory to run in: ")
-  (gklee-set-string-option "-run-in=" dir))
-
-;; Command line args
-(defun gklee-modify-gklee-args ()
-  (interactive)
-  (setq gklee-gklee-user-args (read-string
-			       "Enter command line arguments for Gklee:"
-			       gklee-gklee-user-args)))
-(defun gklee-modify-compile-args ()
-  (interactive)
-  (setq gklee-compile-user-args (read-string
-				 "Enter command line arguments for llvm: "
-				 gklee-compile-user-args)))
-(defun gklee-modify-program-args ()
-  (interactive)
-  (setq gklee-program-user-args (read-string
-				 "Enter command line arguments for your program: "
-				 gklee-program-user-args)))
+	(int-arguments '((gklee-check-level . "-check-level=")
+			 (gklee-device-capability . "-device-compatibility=")
+			 (gklee-max-memory . "-max-memory=")
+			 (gklee-max-time . "-max-time="))))
+    (concat "-emacs"
+	    (mapconcat (lambda (elm) (if (symbol-value (car elm))
+					 (concat " " (cdr elm))
+				       ""))
+		       bool-arguments "")
+	    (mapconcat (lambda (elm) (if (>= (symbol-value (car elm)) 0)
+					(concat " " (cdr elm) (symbol-value (car elm)))
+				      ""))
+		      int-arguments "")
+	    " " gklee-gklee-user-args
+	    " " file-name)))
 
 
 ;;****************************************************************************;;
 ;;**                       Global key bindings                              **;;
 ;;****************************************************************************;;
-;; Boolean options
-(global-set-key "\M-gtgc" 'gklee-toggle-bytecode-coverage)
-(global-set-key "\M-gtbc" 'gklee-toggle-bank-conflicts)
-(global-set-key "\M-gtmc" 'gklee-toggle-memory-coalesce)
-(global-set-key "\M-gtwd" 'gklee-toggle-warp-divergence)
-(global-set-key "\M-gtrb" 'gklee-toggle-check-barrier-redundant)
-(global-set-key "\M-gtcv" 'gklee-toggle-check-volatile)
-(global-set-key "\M-gtcb" 'gklee-toggle-concurrency-bug)
-(global-set-key "\M-gspr" 'gklee-toggle-race-prune)
-(global-set-key "\M-gtrt" 'gklee-toggle-reduce-tests)
-(global-set-key "\M-gtv"  'gklee-toggle-verbose)
 
-;; Integer options
-(global-set-key "\M-gscl" 'gklee-set-check-level)
-(global-set-key "\M-gsdc" 'gklee-set-device-capability)
-
-;; Command line options
-(global-set-key "\M-gupa" 'gklee-modify-program-args)
-(global-set-key "\M-guca" 'gklee-modify-compile-args)
-(global-set-key "\M-gaga" 'gklee-modify-gklee-args)
-
-;;TODO bind these
-(global-set-key "\M-gor"  'gklee-open-remote-package)
+;; ;;TODO bind these
+;; (global-set-key "\M-gor"  'gklee-open-remote-package)
 (global-set-key "\M-gr"   'gklee-run)
 (global-set-key "\M-gk"   'gklee-kill)
